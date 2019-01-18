@@ -1,41 +1,81 @@
-import React, { Component } from "react";
-import FriendCard from "./components/FriendCard";
-import Wrapper from "./components/Wrapper";
-import Title from "./components/Title";
-import friends from "./friends.json";
+import React, { Component } from 'react';
+import './App.css';
+import dogs from './dogs.json'
+import Wrapper from './components/Wrapper'
+import Navpills from './components/Navpills'
+import Title from './components/Title'
+import DogCard from './components/DogCard'
 
 class App extends Component {
-  // Setting this.state.friends to the friends json array
-  state = {
-    friends
-  };
+    state = {
+        message: "Click an image to begin!",
+        topScore: 0,
+        curScore: 0,
+        dogs: dogs,
+        unselectedDogs: dogs
+    }
 
-  removeFriend = id => {
-    // Filter this.state.friends for friends with an id not equal to the id being removed
-    const friends = this.state.friends.filter(friend => friend.id !== id);
-    // Set this.state.friends equal to the new friends array
-    this.setState({ friends });
-  };
+    componentDidMount() {
+    }
 
-  // Map over this.state.friends and render a FriendCard component for each friend object
-  render() {
-    return (
-      <Wrapper>
-        <Title>Friends List</Title>
-        {this.state.friends.map(friend => (
-          <FriendCard
-            removeFriend={this.removeFriend}
-            id={friend.id}
-            key={friend.id}
-            name={friend.name}
-            image={friend.image}
-            occupation={friend.occupation}
-            location={friend.location}
-          />
-        ))}
-      </Wrapper>
-    );
-  }
+    shuffleArray = array => {
+        for (let i = array.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    selectDog = breed => {
+        const findDog = this.state.unselectedDogs.find(item => item.breed === breed);
+
+        if(findDog === undefined) {
+            // failure to select a new dog
+            this.setState({ 
+                message: "You guessed incorrectly!",
+                topScore: (this.state.curScore > this.state.topScore) ? this.state.curScore : this.state.topScore,
+                curScore: 0,
+                dogs: dogs,
+                unselectedDogs: dogs
+            });
+        }
+        else {
+            // success to select a new dog
+            const newDogs = this.state.unselectedDogs.filter(item => item.breed !== breed);
+            
+            this.setState({ 
+                message: "You guessed correctly!",
+                curScore: this.state.curScore + 1,
+                dogs: dogs,
+                unselectedDogs: newDogs
+            });
+        }
+
+        this.shuffleArray(dogs);
+    };
+
+    render() {
+        return (
+            <Wrapper>
+                <Navpills
+                    message={this.state.message}
+                    curScore={this.state.curScore}
+                    topScore={this.state.topScore}
+                />
+                <Title />
+                {
+                    this.state.dogs.map(dog => (
+                        <DogCard
+                            breed={dog.breed}
+                            image={dog.image}
+                            selectDog={this.selectDog} 
+                            curScore={this.state.curScore}
+                        />
+                    ))
+                }
+            </Wrapper>
+        );
+    }
 }
 
 export default App;
+
